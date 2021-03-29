@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Bar Chart</title>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
+  </head>
+	<body>
+
+		<select name="chartType" id="chartType" onchange="updateChartType()">
+			<option value="bar">Bar</option>
+			<option value="pie">Pie</option>
+			<option value="details">Details data</option>
+			<option value="waffer details">ToTAL DEFECTED AND UNDEFECTED WAFFERS</option>
+
+		</select>
+
+        <div class="chart-container" style="position: relative; height:40vh; width:40vw">
+            <canvas id="my_Chart"></canvas>
+        </div>
+
+		<script>
+
+			var myData = {
+				labels: ["GOOD FILES", "BAD FILES"],
+				datasets: [{
+					fill: false,
+					backgroundColor: ['#6600ff', '#ff0000'],
+					borderColor: 'black',
+					data: [{{good_files}}, {{bad_files}}],
+				}],
+
+			};
+			var myData_details = {
+				labels: ["Name Error", "Column Length", "Missing Values"],
+				datasets: [{
+					fill: false,
+					backgroundColor: ['#6600ff', '#ff0000', '#330033'],
+					borderColor: 'black',
+					data: [{{name_error}}, {{invalid_column_length}}, {{missing_values}}],
+				}],
+
+			};
+			var fault_good_waffer = {
+				labels: ["TOTAL DEFECTED WAFFER", "TOTAL NON DEFECTIVE WAFFER"],
+				datasets: [{
+					fill: false,
+					backgroundColor: ['#6600ff', '#ff0000'],
+					borderColor: 'black',
+					data: [{{defected_waffer}}, {{good_waffer}}],
+				}],
+
+			};
+
+			// Code to drow Chart
+            // Default chart defined with type: 'bar'
+			var ctx = document.getElementById('my_Chart').getContext('2d');
+			var myChart = new Chart(ctx, {
+				type: 'bar',    	// Define chart type
+				data: myData, 	// Chart data
+				options: {
+                            scales: {
+                                yAxes: [{
+                                    ticks: {
+                                        beginAtZero: true
+                                    }
+                                }]
+                            }
+                        }
+			});
+
+			// Function runs on chart type select update
+
+			function updateChartType() {
+			    const select = document.getElementById("chartType").value
+                // Destroy the previous chart
+				myChart.destroy();
+                // Draw a new chart on the basic of dropdown
+                if(select=="pie"){
+				myChart = new Chart(ctx, {
+					type: select,  // Select chart type from dropdown
+					data: myData
+				});
+				}
+				else if(select=="details"){
+				myChart = new Chart(ctx, {
+					type: 'pie',  // Select chart type from dropdown
+					data: myData_details
+				});
+				}
+				else if(select=="waffer details"){
+				myChart = new Chart(ctx, {
+					type: 'bar',  // Select chart type from dropdown
+					data: fault_good_waffer
+				});
+				}
+				else if(select=="bar"){
+				var myTableDiv = document.getElementById("myDynamicTable");
+				var table = document.createElement('TABLE');
+					  table.border = '1';
+
+					  var tableBody = document.createElement('TBODY');
+					  table.appendChild(tableBody);
+
+					  for (var i = 0; i < 3; i++) {
+						var tr = document.createElement('TR');
+						tableBody.appendChild(tr);
+
+						for (var j = 0; j < 4; j++) {
+						  var td = document.createElement('TD');
+						  td.width = '75';
+						  td.appendChild(document.createTextNode("Cell " + i + "," + j));
+						  tr.appendChild(td);
+    }
+  }
+  myTableDiv.appendChild(table);
+				}
+			};
+		</script>
+	</body>
+</html>
