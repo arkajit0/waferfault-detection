@@ -14,10 +14,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Azure Service Principal Authentication
-      uses: azure/login@v1
-      with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
     - name: Docker login to ACR
       uses: azure/docker-login@v1
