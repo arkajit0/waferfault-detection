@@ -1,7 +1,7 @@
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from file_operations.File_operations_Azure import File_Operations
+from Training_File_DB_operations.DataTypeValidation_db_insertion import DB_Operation
 import config as cfg
 
 class Send_mail:
@@ -12,10 +12,10 @@ class Send_mail:
         self.subject = subject
         self.db_object = maillogcollection
         self.log = logger
-        self.fileoperation = File_Operations(self.log)
+        self.db_ops = DB_Operation(logger=self.log)
         
 
-    def send_mail_content(self, data):
+    def send_mail_content(self, database, collection):
         if self.subject=='Training Status':
             mail_content = '''Hello,
             Training Completed Successfully!!!
@@ -28,7 +28,7 @@ class Send_mail:
                         '''
         mail_content = mail_content + '\n'
         #attach files
-        files = self.fileoperation.getallFiles(data)
+        files = self.db_ops.get_files(database_name=database, collection_name=collection)
 
         for index, file in enumerate(files,1):
             mail_content = mail_content + str(index)+')'+' '+ file + '\n'

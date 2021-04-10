@@ -10,6 +10,15 @@ import pickle
 
 
 class File_Operations:
+    """
+                    This class shall be used for handling files in Azure Cloud
+
+
+                    Written By: iNeuron Intelligence
+                    Version: 1.0
+                    Revisions: None
+
+                    """
     def __init__(self, log):
         self.connect_str = cfg.Azure_key
         self.blob_service_client = BlobServiceClient.from_connection_string(self.connect_str)
@@ -19,36 +28,64 @@ class File_Operations:
 
 
     def delete_container(self, container_name):
+        """
+                    Method Name: delete_container
+                    Description: delete a containner from storage cloud
+
+                    On Failure: Raise Exception
+
+                    Written By: iNeuron Intelligence
+                    Version: 1.0
+                    Revisions: None
+        """
         container_obj = self.blob_service_client.list_containers()
         containers = [container.name for container in container_obj]
 
         if container_name in containers:
-            # print('deleting')
+
             try:
                 self.blob_service_client.delete_container(container_name)
                 self.logger.db_log(self.collection_name, "Folder deleted successfully!!!"+ str(container_name))
             except Exception as e:
-                # self.logger.db_log(collection_name=self.collection_name,
-                #                    message={"Folder deletion error!!!": e})
-                print(e)
+                raise Exception("error occurred in delete_container: No container found")
             time.sleep(35)
 
             # raise Exception("error occurred in delete_container: No container found")
 
 
     def create_container(self, container_name):
+        """
+                            Method Name: create_container
+                            Description: creating a containner in storage cloud
+
+                            On Failure: Raise Exception
+
+                            Written By: iNeuron Intelligence
+                            Version: 1.0
+                            Revisions: None
+                """
         self.delete_container(container_name=container_name)
 
         try:
             self.blob_service_client.create_container(container_name)
-            # self.logger.db_log(collection_name=self.collection_name,
-            #                    message={"Folder created successfully!!!": container_name})
+
         except Exception as e:
-            print(e)
+            raise Exception("e")
+
             # self.logger.db_log(collection_name=self.collection_name,
             #                    message={"Error creating Folder": e})
 
     def getallFiles(self, container_name):
+        """
+                            Method Name: getallFiles
+                            Description: get all filename from a particular container
+
+                            On Failure: Raise Exception
+
+                            Written By: iNeuron Intelligence
+                            Version: 1.0
+                            Revisions: None
+                """
         container_obj = self.blob_service_client.list_containers()
         containers = [container.name for container in container_obj]
         if container_name in containers:
@@ -59,6 +96,16 @@ class File_Operations:
             raise Exception("error occurred in getallFiles: No container found")
 
     def uploadfiles(self, container_name, filename, data):
+        """
+                                    Method Name: uploadfiles
+                                    Description: upload files to  a particular container
+
+                                    On Failure: Raise Exception
+
+                                    Written By: iNeuron Intelligence
+                                    Version: 1.0
+                                    Revisions: None
+                        """
         container_obj = self.blob_service_client.list_containers()
         containers = [container.name for container in container_obj]
         onlyfiles = self.getallFiles(container_name)
@@ -71,6 +118,16 @@ class File_Operations:
             raise Exception("error in uploadfiles:: no container name")
 
     def deletefiles(self, container_name, filename):
+        """
+                                            Method Name: deletefiles
+                                            Description: delete files in  a particular container
+
+                                            On Failure: Raise Exception
+
+                                            Written By: iNeuron Intelligence
+                                            Version: 1.0
+                                            Revisions: None
+                                """
         container_obj = self.blob_service_client.list_containers()
         containers = [container.name for container in container_obj]
         if container_name in containers:
@@ -83,6 +140,13 @@ class File_Operations:
 
 
     def movefiles(self, source, destination, filename):
+        """
+                                                    Method Name: movefiles
+                                                    Description: move files in  a particular container
+                                                    Written By: iNeuron Intelligence
+                                                    Version: 1.0
+                                                    Revisions: None
+                                        """
         collection_name = 'FileTransfer'
         source_obj = self.blob_service_client.get_blob_client(source, blob=filename)
         dest_obj = self.blob_service_client.get_blob_client(destination, blob=filename)
@@ -94,6 +158,13 @@ class File_Operations:
             self.logger.db_log(collection_name, {"File Transfer unsuccessfull!!!": filename})
 
     def copyfiles(self, source, destination, filename):
+        """
+                        Method Name: copyfiles
+                        Description: copy files in  a particular container
+                        Written By: iNeuron Intelligence
+                        Version: 1.0
+                        Revisions: None
+            """
         collection_name = 'FileTransfer'
         source_obj = self.blob_service_client.get_blob_client(source, blob=filename)
         dest_obj = self.blob_service_client.get_blob_client(destination, blob=filename)
@@ -107,6 +178,13 @@ class File_Operations:
 
 
     def downloadfiles(self, container_name, filename):
+        """
+                                Method Name: downloadfiles
+                                Description: download files from  a particular container
+                                Written By: iNeuron Intelligence
+                                Version: 1.0
+                                Revisions: None
+                    """
         container_obj = self.blob_service_client.list_containers()
         containers = [container.name for container in container_obj]
         if container_name in containers:
@@ -117,6 +195,8 @@ class File_Operations:
         else:
             raise Exception("error occurred in downloadfiles: No container found")
 
+
+    '''
     def savemodel(self, container_name, filename, model):
         collection = "ModelTrainingLog"
         model_file = self.getallFiles(container_name=container_name)
@@ -143,5 +223,7 @@ class File_Operations:
             return model
         else:
             raise Exception("error occurred in loadmodel: No container found")
+            
+    '''
 
 

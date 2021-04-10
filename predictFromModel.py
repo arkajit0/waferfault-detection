@@ -1,10 +1,12 @@
 import pandas
+from datetime import datetime
 from data_preprocessing import preprocessing
 from data_ingestion import data_loader
 # from application_logging import logger
 from application_logging.DB_logger import DB_Logs
 from Prediction_Raw_Data_Validation.predictionDataValidation import Prediction_Data_validation
 from Training_File_DB_operations.DataTypeValidation_db_insertion import DB_Operation, Model_saving_loading
+from file_operations.File_operations_Azure import File_Operations
 from Mail_box import Send_mail
 
 
@@ -14,7 +16,7 @@ class prediction:
         self.file_object = "Prediction_Log"
         self.log_writer = DB_Logs(database_name="Prediction_Logs")
         self.db_operation = DB_Operation(logger=self.log_writer)
-        # self.fileoperations = File_Operations(log=self.log_writer)
+        self.fileoperations = File_Operations(log=self.log_writer)
         if path is not None:
             self.pred_data_val = Prediction_Data_validation(path)
         self.mail_log_obj = "MailSendLog"
@@ -70,10 +72,19 @@ class prediction:
                 # result.to_csv("Prediction_Output_File/Predictions.csv",header=True,mode='a+') #appends result to prediction file
             # path = "prediction-csv"
             # self.fileoperations.create_container(path)
-            # self.db_operation.selectdatafromcollection(Database_name="Prediction_Files", collection_="Prediction_CSV",
-            #                                            storing_location=path, filename="predictions.csv")
+            predicted_data = self.db_operation.selectdatafromcollection(Database_name="Prediction_Files",
+                                                                        collection_="Prediction_Result")
+            now = datetime.now()
+            date = now.strftime("%Y-%m-%d")
+            current_time = now.strftime("%H:%M:%S")
+            self.fileoperations.uploadfiles(container_name="Predicted_Result",
+                                            filename="Result_"+str(date)+"_"+str(current_time),
+                                            data=predicted_data.to_csv(index=False))
             self.log_writer.db_log(self.file_object, "End of Prediction")
-            self.sendmail.send_mail_content("prediction-archived-bad-data")
+            try:
+                self.sendmail.send_mail_content("Data_Collection_Prediction", "Bad_Data")
+            except:
+                pass
         except Exception as ex:
             self.log_writer.db_log(self.file_object, "Error occured while running the prediction!! Error:: %s" % ex)
             raise ex

@@ -7,7 +7,7 @@ from application_logging.DB_logger import *
 
 class pred_validation:
     def __init__(self, path):
-        self.drop_existing_db = Drop_log_db(database_name="Prediction_Logs")
+        # self.drop_existing_db = Drop_log_db(database_name="Prediction_Logs")
         self.log_writer = DB_Logs(database_name="Prediction_Logs")
         self.raw_data = Prediction_Data_validation(path)
         self.dataTransform = dataTransformPredict()

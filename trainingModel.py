@@ -90,7 +90,7 @@ class trainModel:
                 # splitting the data into training and test set for each cluster one by one
                 x_train, x_test, y_train, y_test = train_test_split(cluster_features, cluster_label, test_size=1 / 3, random_state=355)
 
-                model_finder= tuner.Model_Finder(self.db_object, self.log_writer) # object initialization
+                model_finder= tuner.Model_Finder(self.db_object, self.log_writer, i) # object initialization
 
                 #getting the best model for each of the clusters
                 best_model_name,best_model, model_score=model_finder.get_best_model(x_train,y_train,x_test,y_test)
@@ -99,11 +99,13 @@ class trainModel:
                 # file_op = file_methods.File_Operation(self.db_object,self.log_writer)
                 save_model=self.model_ops.save_model_db(model=best_model,model_name=best_model_name+str(i),
                                                         collection_name=best_model_name+str(i), model_score=model_score)
+                self.log_writer.db_log(self.db_object, {"cluster_label": str(i), "train_set": str(len(x_train)),
+                                                        "test_set": str(len(x_test))})
 
             # logging the successful Training
             self.log_writer.db_log(self.db_object, "Successful End of Training")
             # self.file_object.close()
-            # self.sendmail.send_mail_content("bad-data")
+            self.sendmail.send_mail_content("Data_Collection", "Bad_Data")
         except Exception:
             # logging the unsuccessful Training
             self.log_writer.db_log(self.db_object, "Unsuccessful End of Training")

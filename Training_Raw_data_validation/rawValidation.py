@@ -116,13 +116,6 @@ class Raw_Data_validation:
 
                 """
 
-        #pattern = "['Wafer']+['\_'']+[\d_]+[\d]+\.csv"
-        # delete the directories for good and bad data in case last run was unsuccessful and folders were not deleted.
-        # self.deleteExistingBadDataTrainingFolder()
-        # self.deleteExistingGoodDataTrainingFolder()
-        # #create new directories
-        # self.createDirectoryForGoodBadRawData()
-        # onlyfiles = [f for f in listdir(self.Batch_Directory)]
         onlyfiles = self.fileoperation.getallFiles(self.Batch_Directory)
         try:
             # f = open("Training_Logs/nameValidationLog.txt", 'a+')
@@ -159,9 +152,6 @@ class Raw_Data_validation:
                                        "filename": str(filename), "status": "failure"}
                             self.logger.db_log(collection_name, message)
                     else:
-                        # shutil.copy("Training_Batch_Files/" + filename, "Training_Raw_files_validated/Bad_Raw")
-                        # self.fileoperation.copyfiles(source=self.Batch_Directory, destination="bad-raw",
-                        #                              filename=filename)
                         self.db_ops.insert_intermediate_data_intodb(database_name="Data_Collection",
                                                                     collection_name="Bad_Data", file_name=filename,
                                                                     csv_data=self.fileoperation.downloadfiles(
@@ -172,15 +162,11 @@ class Raw_Data_validation:
                                    "filename": str(filename), "status": "failure"}
                         self.logger.db_log(collection_name, message)
                 else:
-                    # shutil.copy("Training_Batch_Files/" + filename, "Training_Raw_files_validated/Bad_Raw")
-                    # self.fileoperation.copyfiles(source=self.Batch_Directory, destination="bad-raw",
-                    #                              filename=filename)
                     self.db_ops.insert_intermediate_data_intodb(database_name="Data_Collection",
                                                                 collection_name="Bad_Data", file_name=filename,
                                                                 csv_data=self.fileoperation.downloadfiles(
                                                                     container_name=self.Batch_Directory,
                                                                     filename=filename))
-                    # self.logger.log(f, "Invalid File Name!! File moved to Bad Raw Folder :: %s" % filename)
                     message = {"message": "Invalid File Name!! File moved to Bad Raw Folder " + str(filename),
                                "filename": str(filename), "status": "failure"}
                     self.logger.db_log(collection_name, message)
@@ -188,9 +174,6 @@ class Raw_Data_validation:
             # f.close()
 
         except Exception as e:
-            # f = open("Training_Logs/nameValidationLog.txt", 'a+')
-            # self.logger.log(f, "Error occured while validating FileName %s" % e)
-            # f.close()
             collection_name = "nameValidationLog"
             self.logger.db_log(collection_name, "Error occured while validating FileName"+ str(e))
             raise e
@@ -217,7 +200,6 @@ class Raw_Data_validation:
         try:
             # f = open("Training_Logs/columnValidationLog.txt", 'a+')
             collection_name = "columnValidationLog"
-            # self.logger.log(f,"Column Length Validation Started!!")
             self.logger.db_log(collection_name, "Column Length Validation Started!!")
             # good_files = self.fileoperation.getallFiles("good-raw")
             good_files = self.db_ops.get_files(database_name="Data_Collection", collection_name="Good_Data")
@@ -250,13 +232,10 @@ class Raw_Data_validation:
             self.logger.db_log(collection_name,  "Error Occured while moving the file"+ str(OSError))
             raise OSError
         except Exception as e:
-            # f = open("Training_Logs/columnValidationLog.txt", 'a+')
-            # self.logger.log(f, "Error Occured:: %s" % e)
-            # f.close()
             collection_name = "columnValidationLog"
             self.logger.db_log(collection_name, "Error Occured"+ str(e))
             raise e
-        # f.close()
+
 
     def validateMissingValuesInWholeColumn(self):
         """
@@ -324,16 +303,3 @@ class Raw_Data_validation:
             collection_name = "missingValuesInColumn"
             self.logger.db_log(collection_name, "Error Occured"+ str(e))
             raise e
-        # f.close()
-
-
-
-
-
-
-
-
-
-
-
-
