@@ -411,11 +411,6 @@ class Pages:
                     }
                 ),
 
-                dcc.Link(
-                    html.Button('Model Analyze'),
-                    id="navigate-to-analyze-page", href='/analyze',
-                    style={"display": "inline-block"},
-                ),
 
                 dcc.Graph(
                     id={
