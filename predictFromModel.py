@@ -77,7 +77,7 @@ class prediction:
             now = datetime.now()
             date = now.strftime("%Y-%m-%d")
             current_time = now.strftime("%H:%M:%S")
-            self.fileoperations.uploadfiles(container_name="Predicted_Result",
+            self.fileoperations.uploadfiles(container_name="predicted-result",
                                             filename="Result_"+str(date)+"_"+str(current_time),
                                             data=predicted_data.to_csv(index=False))
             self.log_writer.db_log(self.file_object, "End of Prediction")

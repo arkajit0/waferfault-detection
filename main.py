@@ -28,8 +28,10 @@ import dash_table
 from dashboard import Pages
 import config as cg
 
-
+# try:
 values = Pages()
+# except:
+#     pass
 
 os.putenv('LANG', 'en_US.UTF-8')
 os.putenv('LC_ALL', 'en_US.UTF-8')
@@ -52,6 +54,7 @@ dash_app.layout = html.Div(
                             ])
 
 analyzer_app.layout = values.Model_Analyzer()
+# analyzer_app.layout = html.Div([])
 
 Filepage_app.layout = html.Div([
                                     dcc.RadioItems(
@@ -83,18 +86,6 @@ dashboard.bind(server)
 CORS(server)
 
 
-#prediction func
-def train_processing():
-    path = 'training-batch-files'
-    #
-    train_valObj = train_validation(path)  # object initialization
-
-    train_valObj.train_validation()  # calling the training_validation function
-
-    trainModelObj = trainModel()  # object initialization
-    trainModelObj.trainingModel()  # training the model for the files in the table
-
-
 @server.route("/", methods=['GET'])
 @cross_origin()
 def home():
@@ -107,7 +98,7 @@ def render_dashboard():
 @server.route('/tracker', methods=["POST"])
 def watch_dog():
     if request.method == "POST":
-        print(request)
+        # print(request)
         data = request.json
         client = pymongo.MongoClient(cg.Mongodb)
         db = client["tracking_db"]
@@ -115,18 +106,18 @@ def watch_dog():
         conn.insert_one(data)
     return jsonify(status="Done")
 
-@server.route("/predict", methods=['GET', 'POST'])
+@server.route("/predict", methods=['POST', 'GET'])
 @cross_origin()
 def predictRouteClient():
     try:
         if request.json is not None:
             path = request.json['filepath']
 
-            pred_val = pred_validation(path)  # object initialization
+            pred_val = pred_validation(path) #object initialization
 
-            pred_val.prediction_validation()  # calling the prediction_validation function
+            pred_val.prediction_validation() #calling the prediction_validation function
 
-            pred = prediction(path)  # object initialization
+            pred = prediction(path) #object initialization
 
             # predicting for dataset present in database
             path = pred.predictionFromModel()
@@ -134,33 +125,38 @@ def predictRouteClient():
         elif request.form is not None:
             path = request.form['filepath']
 
-            pred_val = pred_validation(path)  # object initialization
+            pred_val = pred_validation(path) #object initialization
 
-            pred_val.prediction_validation()  # calling the prediction_validation function
+            pred_val.prediction_validation() #calling the prediction_validation function
 
-            pred = prediction(path)  # object initialization
+            pred = prediction(path) #object initialization
 
             # predicting for dataset present in database
             path = pred.predictionFromModel()
             return Response("Prediction File created at %s!!!" % path)
 
     except ValueError:
-        return Response("Error Occurred! %s" % ValueError)
+        return Response("Error Occurred! %s" %ValueError)
     except KeyError:
-        return Response("Error Occurred! %s" % KeyError)
+        return Response("Error Occurred! %s" %KeyError)
     except Exception as e:
-        return Response("Error Occurred! %s" % e)
+        return Response("Error Occurred! %s" %e)
 
 
-@server.route("/train", methods=['GET'])
+@server.route("/train", methods=['POST', 'GET'])
 @cross_origin()
 def trainRouteClient():
 
     try:
-        # if request.json['folderPath'] is not None:
-            # path = request.json['folderPath']
-        train_thread = threading.Thread(target=train_processing)
-        train_thread.start()
+        if request.json['folderPath'] is not None:
+            path = request.json['folderPath']
+            train_valObj = train_validation(path) #object initialization
+
+            train_valObj.train_validation()#calling the training_validation function
+
+
+            trainModelObj = trainModel() #object initialization
+            trainModelObj.trainingModel() #training the model for the files in the table
 
 
     except ValueError:
@@ -174,12 +170,8 @@ def trainRouteClient():
     except Exception as e:
 
         return Response("Error Occurred! %s" % e)
-    return Response("You will receive an mail when Training is complete!!!")
+    return Response("Training successfull!!")
 
-@server.route("/track", methods=['POST', 'GET'])
-def tracker():
-    print(request)
-    return jsonify(status1="ok")
 
 @dash_app.callback(Output('tabs-content-props', 'children'),
               Input('tabs-styled-with-props', 'value'))
@@ -198,7 +190,7 @@ def render_content(tab):
                     [Input('train-picker-range', 'start_date'),
                      Input('train-picker-range', 'end_date')])
 def update_output(start_date, end_date):
-    print(start_date, end_date)
+    # print(start_date, end_date)
     if start_date is not None:
         df = values.datewise_train[(values.datewise_train['date'] >= start_date)]
         date_list = list(df['date'].value_counts().to_dict().keys())
@@ -268,7 +260,7 @@ def update_graph(s_valuece):
                     [Input('pred-picker-range', 'start_date'),
                      Input('pred-picker-range', 'end_date')])
 def update_output(start_date, end_date):
-    print(start_date, end_date)
+    # print(start_date, end_date)
     if start_date is not None:
         df = values.datewise_pred[(values.datewise_pred['date'] >= start_date)]
         date_list = list(df['date'].value_counts().to_dict().keys())
@@ -343,8 +335,9 @@ def update_graph(s_value):
     option = [{'label': i, 'value': i + "_" + str(s_value)} for i in values.model_list_cluster[s_value]]
     value = option[0]['value']
     model_status = pd.DataFrame([file["model_status"] for file in values.model_logs.find({"cluster_no": str(s_value)})][0])
+    best_model = [model["Best_model"] for model in values.model_logs.find({"cluster_no": str(s_value)})][0]
     fig = {'data': [{'x': model_status["models"].to_list(), 'y': model_status["scores"].to_list(), 'type': 'bar'}],
-           'layout': {'title': 'Model Status', "width": 500}}
+           'layout': {'title': 'Model Status ' + str(best_model), "width": 500}}
     return option, value, fig
 
 
@@ -366,9 +359,9 @@ def update_graph(s_value):
     fetch_data = values.model_log_data.loc[(values.model_log_data["model_name"] == model_name) & (values.model_log_data["cluster"] == cluster)]
     pickle_data = fetch_data['model_analysis']
     con = pickle.loads(list(pickle_data)[0])
-    precision = con["precision"]
-    recall = con["recall"]
-    f1 = con["f1"]
+    precision = int(con["precision"] * 100)
+    recall = int(con["recall"] * 100)
+    f1 = int(con["f1"] * 100)
     try:
         accuracy = int(float(fetch_data["Accuracy_score"]) * 100)
     except:
@@ -388,22 +381,25 @@ def update_graph(s_value):
 )
 def update_graph(value, file_type):
     if file_type == "Training":
-        df = values.train_files[value]
+        df = Pages().train_files[value]
         data = df.to_dict('records')
         return data
     elif file_type == "Prediction":
-        df = values.pred_files[value]
-        data=df.to_dict('records')
+        df = Pages().pred_files[value]
+        data = df.to_dict('records')
         return data
     else:
-        data = values.track_files.to_dict('records')
+        data = Pages().track_files.to_dict('records')
         return data
+
+
 
 app = DispatcherMiddleware(server, {
     '/dash1': dash_app.server,
     '/dash2': analyzer_app.server,
     '/dash3': Filepage_app.server
 })
+
 # port = int(os.getenv("PORT",5000))
 if __name__ == "__main__":
     # host = '0.0.0.0'

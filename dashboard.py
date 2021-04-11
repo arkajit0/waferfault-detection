@@ -553,7 +553,9 @@ class Pages:
                                 dcc.Graph(
                                     id='graph2-id',
                                     figure={}
-                                )],
+                                ),
+
+                            ],
                                     style = {"height": "100%", "width": "30%", 'border': '3px solid green', 'padding': '10px',"margin-left": "2px",
                                         "margin-right": "2px", "margin-top": "2px", }),
 
